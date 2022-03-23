@@ -5,7 +5,7 @@ plugins {
     id 'org.ajoberstar.grgit' version '4.1.0'
 }
 
-group = 'we'
+group = 'we.git-implementations'
 version = '001'
 
 sourceCompatibility = '17'
@@ -82,10 +82,6 @@ tasks.register('changeVersion') {
 publishing {
     publications {
         dynamicApiJar(MavenPublication) { MavenPublication mavenPublication ->
-            mavenPublication.groupId = "we"
-            mavenPublication.artifactId = "dynamic-api"
-            mavenPublication.version = version
-
             // Плагин java (на базе которого сделан плагин java-library, который мы здесь используем) уже подготовил нам комплект для публикации
             // Такие заготовленные комплекты для публикации - это называется компоненты
             from components.java
