@@ -1,0 +1,109 @@
+plugins {
+    id 'io.spring.dependency-management' version '1.0.11.RELEASE'
+    id 'java-library'
+    id 'maven-publish'
+    id 'org.ajoberstar.grgit' version '4.1.0'
+}
+
+group = 'we'
+version = '001'
+
+sourceCompatibility = '17'
+
+configurations {
+    compileOnly {
+        extendsFrom annotationProcessor
+    }
+}
+
+repositories {
+    mavenCentral()
+}
+
+dependencies {
+
+    // Lombok
+    compileOnly 'org.projectlombok:lombok'
+    annotationProcessor 'org.projectlombok:lombok'
+
+    api 'org.springframework:spring-core'
+    api 'org.springframework:spring-beans'
+    api 'org.springframework:spring-context'
+}
+
+dependencyManagement {
+    imports {
+        mavenBom 'org.springframework.boot:spring-boot-dependencies:2.6.4'
+    }
+}
+
+tasks.register('changeVersion') {
+    doLast {
+
+        // Adding version tag
+        grgit.tag.add(
+            name: version,
+            pointsTo: "HEAD",
+            force: false,
+            annotate: false,
+            message: null,
+            tagger: null
+        )
+
+        /*
+         * Push
+         *
+         * For this to work:
+         *      - the remote must be specified in the "git@..." form (SSH)
+         *      - a valid private SSH key must me added to ssh-agent like this
+         *
+         *        # Start SSH agent
+         *        ssh-agent -s
+         *
+         *        # Add the private key to ssh-agent
+         *        ssh-add ~/.ssh/private_ssh_key_for_git_repo
+         */
+        /*
+        grgit.push {
+            remote = "origin"
+            refsOrSpecs = [
+                "+master:master"
+            ]
+            all = false
+            tags = true
+            force = false
+            dryRun = false
+            pushOptions = []
+        }
+        */
+    }
+}
+
+publishing {
+    publications {
+        dynamicApiJar(MavenPublication) { MavenPublication mavenPublication ->
+            mavenPublication.groupId = "we"
+            mavenPublication.artifactId = "dynamic-api"
+            mavenPublication.version = version
+
+            // Плагин java (на базе которого сделан плагин java-library, который мы здесь используем) уже подготовил нам комплект для публикации
+            // Такие заготовленные комплекты для публикации - это называется компоненты
+            from components.java
+
+            versionMapping {
+                // Если у некой зависимости, в выбранном ее варианте, есть вот такой атрибут
+                //      org.gradle.usage=java-api
+                // то сделать ей версию как в
+                usage('java-api') {
+                    fromResolutionResult()
+                }
+                usage('java-runtime') {
+                    fromResolutionResult()
+                }
+            }
+        }
+    }
+    repositories {
+        mavenLocal()
+    }
+}
