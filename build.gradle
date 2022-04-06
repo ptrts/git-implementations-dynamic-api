@@ -16,6 +16,7 @@ configurations {
 }
 
 repositories {
+    mavenLocal()
     mavenCentral()
 }
 
@@ -38,7 +39,7 @@ dependencyManagement {
 
 publishing {
     publications {
-        dynamicApiJar(MavenPublication) { MavenPublication mavenPublication ->
+        register('jar', MavenPublication) { MavenPublication mavenPublication ->
             // Плагин java (на базе которого сделан плагин java-library, который мы здесь используем) уже подготовил нам комплект для публикации
             // Такие заготовленные комплекты для публикации - это называется компоненты
             from components.java
@@ -57,6 +58,12 @@ publishing {
         }
     }
     repositories {
-        mavenLocal()
+        maven {
+            name = 's3Private'
+            url = 's3://maven.taruts.net'
+            authentication {
+                register('aws', AwsImAuthentication)
+            }
+        }
     }
 }
